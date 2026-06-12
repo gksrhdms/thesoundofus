@@ -73,5 +73,208 @@
     </div>
   </main>
 
+  <canvas id="trail-canvas"></canvas>
+
+  <script>
+  (function () {
+    var canvas = document.getElementById('trail-canvas');
+    var ctx    = canvas.getContext('2d');
+    var pts    = [];
+    var lastX  = null, lastY = null, lastW = 1.4;
+    var isDown = false;   // PC: 마우스 누르고 있는 동안만 true
+
+    var RECENT_MS = 8000;
+    var STAY_MS   = 60000;
+    var FADE_MS   = 45000;
+    var TOTAL_MS  = STAY_MS + FADE_MS;
+    var MAX_PTS   = 8000;
+    var OPACITY   = 0.55;
+    var COLOR     = '30,92,56';   // #1e5c38 → RGB
+
+    function resize() {
+      var w = document.documentElement.scrollWidth;
+      var h = document.documentElement.scrollHeight;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width  = w;
+        canvas.height = h;
+      }
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ── PC: 클릭 누르는 순간 시작 ──
+    document.addEventListener('mousedown', function () {
+      isDown = true;
+      lastX = null; lastY = null; lastW = 1.4;
+    });
+
+    // ── PC: 클릭 떼는 순간 종료 ──
+    document.addEventListener('mouseup', function () {
+      isDown = false;
+      lastX = null; lastY = null;
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!isDown) return;   // 누르고 있을 때만 기록
+      var x  = e.clientX + window.scrollX;
+      var y  = e.clientY + window.scrollY;
+      var ns = (lastX === null);
+      var w  = lastW;
+
+      if (!ns) {
+        var dx = x - lastX, dy = y - lastY;
+        if (dx * dx + dy * dy < 1) return;
+        var speed = Math.sqrt(dx * dx + dy * dy);
+        var tw = Math.max(0.6, Math.min(2.2, 2.2 - speed * 0.020));
+        w = lastW = lastW * 0.75 + tw * 0.25;
+      } else {
+        lastW = 1.4; w = 1.4;
+      }
+
+      pts.push({ x: x, y: y, t: Date.now(), w: w, ns: ns });
+      if (pts.length > MAX_PTS) pts.shift();
+      lastX = x; lastY = y;
+    });
+
+    // ── 모바일: 터치 시작 ──
+    document.addEventListener('touchstart', function () {
+      lastX = null; lastY = null; lastW = 1.4;
+    }, { passive: true });
+
+    // ── 모바일: 터치 이동 ──
+    document.addEventListener('touchmove', function (e) {
+      var touch = e.touches[0];
+      var x = touch.pageX;
+      var y = touch.pageY;
+      var ns = (lastX === null);
+      var w  = lastW;
+
+      if (!ns) {
+        var dx = x - lastX, dy = y - lastY;
+        if (dx * dx + dy * dy < 1) return;
+        var speed = Math.sqrt(dx * dx + dy * dy);
+        var tw = Math.max(0.6, Math.min(2.2, 2.2 - speed * 0.020));
+        w = lastW = lastW * 0.75 + tw * 0.25;
+      } else {
+        lastW = 1.4; w = 1.4;
+      }
+
+      pts.push({ x: x, y: y, t: Date.now(), w: w, ns: ns });
+      if (pts.length > MAX_PTS) pts.shift();
+      lastX = x; lastY = y;
+    }, { passive: true });
+
+    // ── 모바일: 손 뗌 ──
+    document.addEventListener('touchend', function () {
+      lastX = null; lastY = null;
+    }, { passive: true });
+
+    // ── 렌더링 (메인페이지와 동일 로직, 색만 변경) ──
+    function drawBatched(from, to, style, width) {
+      var cur = null;
+      for (var i = from; i < to; i++) {
+        var p = pts[i];
+        if (p.ns || cur === null) {
+          if (cur && cur.length >= 2) flushSmooth(cur, style, width);
+          cur = [p];
+        } else {
+          cur.push(p);
+        }
+      }
+      if (cur && cur.length >= 2) flushSmooth(cur, style, width);
+    }
+
+    function flushSmooth(g, style, width) {
+      ctx.beginPath();
+      ctx.strokeStyle = style;
+      ctx.lineWidth   = width;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.moveTo(g[0].x, g[0].y);
+      if (g.length === 2) {
+        ctx.lineTo(g[1].x, g[1].y);
+      } else {
+        for (var i = 1; i < g.length - 1; i++) {
+          var mx = (g[i].x + g[i + 1].x) * 0.5;
+          var my = (g[i].y + g[i + 1].y) * 0.5;
+          ctx.quadraticCurveTo(g[i].x, g[i].y, mx, my);
+        }
+        ctx.lineTo(g[g.length - 1].x, g[g.length - 1].y);
+      }
+      ctx.stroke();
+    }
+
+    function render() {
+      var now = Date.now();
+      while (pts.length && now - pts[0].t > TOTAL_MS) pts.shift();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!pts.length) { requestAnimationFrame(render); return; }
+
+      var si = 0;
+      while (si < pts.length && now - pts[si].t >= STAY_MS) si++;
+      var ri = si;
+      while (ri < pts.length && now - pts[ri].t >= RECENT_MS) ri++;
+
+      // A: 페이드 구간
+      if (si > 0) {
+        var fb = {};
+        for (var i = 1; i < si; i++) {
+          if (pts[i].ns) continue;
+          var prg = Math.min(1, (now - pts[i].t - STAY_MS) / FADE_MS);
+          var b   = Math.min(9, Math.floor(prg * 10));
+          if (!fb[b]) fb[b] = [];
+          fb[b].push(i);
+        }
+        for (var bk in fb) {
+          if (!fb.hasOwnProperty(bk)) continue;
+          var frac = (parseInt(bk) + 0.5) / 10;
+          var idxs = fb[bk];
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(' + COLOR + ',' + (OPACITY * (1 - frac)).toFixed(3) + ')';
+          ctx.lineWidth   = 1.1 + frac * 1.2;
+          ctx.lineCap     = 'round';
+          for (var j = 0; j < idxs.length; j++) {
+            ctx.moveTo(pts[idxs[j] - 1].x, pts[idxs[j] - 1].y);
+            ctx.lineTo(pts[idxs[j]].x,     pts[idxs[j]].y);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // B: 안정 구간
+      var styl = 'rgba(' + COLOR + ',' + OPACITY + ')';
+      if (ri > si) drawBatched(si, ri, styl, 1.1);
+
+      // C: 최근 구간 (가변 굵기)
+      for (var i = ri; i < pts.length; i++) {
+        if (pts[i].ns || i === 0) continue;
+        var prev = pts[i - 1];
+        if (!prev || prev.ns) continue;
+
+        ctx.beginPath();
+        ctx.strokeStyle = styl;
+        ctx.lineWidth   = (prev.w + pts[i].w) * 0.5;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+
+        var hasNext = (i + 1 < pts.length && !pts[i + 1].ns);
+        if (hasNext) {
+          var mx0 = (prev.x + pts[i].x) * 0.5, my0 = (prev.y + pts[i].y) * 0.5;
+          var mx1 = (pts[i].x + pts[i + 1].x) * 0.5, my1 = (pts[i].y + pts[i + 1].y) * 0.5;
+          ctx.moveTo(mx0, my0);
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx1, my1);
+        } else {
+          ctx.moveTo(prev.x, prev.y);
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+  })();
+  </script>
 </body>
 </html>
