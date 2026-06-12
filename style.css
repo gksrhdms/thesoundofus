@@ -137,6 +137,8 @@ main {
 
 .interview-body {
   padding-bottom: 120px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .qa {
