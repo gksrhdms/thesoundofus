@@ -244,19 +244,20 @@ void print(Interview *iv) {
 
   document.addEventListener('touchmove', function (e) {
     var touch = e.touches[0];
-    var x = touch.clientX + window.scrollX;
-    var y = touch.clientY + window.scrollY;
+    // pageX/pageY = 스크롤 포함한 절대 좌표 → 캔버스 좌표계와 일치
+    var x = touch.pageX;
+    var y = touch.pageY;
     var ns = (lastX === null);
     var w  = lastW;
 
     if (!ns) {
       var dx = x - lastX, dy = y - lastY;
-      if (dx * dx + dy * dy < 9) return;
+      if (dx * dx + dy * dy < 1) return;  // 3px → 1px로 완화
       var speed = Math.sqrt(dx * dx + dy * dy);
-      var tw = Math.max(0.4, Math.min(2.2, 2.2 - speed * 0.030));
-      w = lastW = lastW * 0.65 + tw * 0.35;
+      var tw = Math.max(0.6, Math.min(2.2, 2.2 - speed * 0.020));  // 속도 반응 부드럽게
+      w = lastW = lastW * 0.75 + tw * 0.25;  // 굵기 변화 더 완만하게
     } else {
-      lastW = 1.2; w = 1.2;
+      lastW = 1.4; w = 1.4;  // 시작 굵기 살짝 올림
     }
 
     pts.push({ x: x, y: y, t: Date.now(), w: w, ns: ns });
