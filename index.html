@@ -237,6 +237,37 @@ void print(Interview *iv) {
 
   document.addEventListener('mouseleave', function () { lastX = null; lastY = null; });
 
+  // ── 터치 이벤트 (모바일) ──
+  document.addEventListener('touchstart', function (e) {
+    lastX = null; lastY = null; lastW = 1.2; // 새 획 시작
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    var touch = e.touches[0];
+    var x = touch.clientX + window.scrollX;
+    var y = touch.clientY + window.scrollY;
+    var ns = (lastX === null);
+    var w  = lastW;
+
+    if (!ns) {
+      var dx = x - lastX, dy = y - lastY;
+      if (dx * dx + dy * dy < 9) return;
+      var speed = Math.sqrt(dx * dx + dy * dy);
+      var tw = Math.max(0.4, Math.min(2.2, 2.2 - speed * 0.030));
+      w = lastW = lastW * 0.65 + tw * 0.35;
+    } else {
+      lastW = 1.2; w = 1.2;
+    }
+
+    pts.push({ x: x, y: y, t: Date.now(), w: w, ns: ns });
+    if (pts.length > MAX_PTS) pts.shift();
+    lastX = x; lastY = y;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function () {
+    lastX = null; lastY = null; // 손 뗄 때 획 끊기
+  }, { passive: true });
+
   // 포인트 배열을 ns 플래그 기준으로 스트로크 분리 후 베지어 경로 그리기
   function drawBatched(from, to, style, width) {
     var cur = null;
