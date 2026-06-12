@@ -28,6 +28,8 @@ body {
   line-height: 17px;
   padding: 0 var(--side-padding);
   -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
 }
 body::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
