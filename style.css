@@ -1,0 +1,424 @@
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #111111;
+  --muted: #999999;
+  --max-width: 640px;
+  --side-padding: 20px;
+  font-family: 'Director', 'ShinMyungjo', serif;
+}
+
+html {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Director', 'ShinMyungjo', serif;
+  font-weight: 500;
+  line-height: 17px;
+  padding: 0 var(--side-padding);
+  -webkit-font-smoothing: antialiased;
+}
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── 네비게이션 ── */
+
+nav {
+  max-width: var(--max-width);
+  margin: 0;
+  padding: 20px 0 100px;
+  display: flex;
+  flex-direction: column;  /* 세로로 쌓이게 */
+  align-items: flex-start;
+}
+
+nav .site-name {
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.nav-about {
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+nav .nav-links a {
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+nav .nav-links a:hover {
+  color: var(--text);
+}
+
+/* ── 메인 영역 ── */
+
+main {
+  max-width: var(--max-width);
+  margin: 0;
+}
+
+/* ── 홈 — 인터뷰 목록 ── */
+
+.interview-list {
+  list-style: none;
+  padding-bottom: 160px;
+}
+
+
+.interview-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 18px 0;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.interview-list a:hover .name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.interview-list .name {
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.interview-list .meta {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-left: 24px;
+}
+
+/* ── 인터뷰 페이지 ── */
+
+.interview-header {
+  padding-bottom: 48px;
+  margin-bottom: 56px;
+}
+
+.interview-header h1 {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  margin-bottom: 16px;
+}
+
+.interview-header .interview-info {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.interview-body {
+  padding-bottom: 120px;
+}
+
+.qa {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.qa .question {
+  align-self: flex-start;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 72%;
+}
+
+.qa .answer {
+  align-self: flex-end;
+  font-size: 10px;
+  line-height: 1.95;
+  color: var(--text);
+  max-width: 72%;
+  text-align: right;
+}
+
+
+.interview-photos {
+  margin-top: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.interview-photos img {
+  width: 100%;
+  display: block;
+}
+
+.interview-layout {
+  display: flex;
+  gap: 48px;
+}
+
+.interview-left {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.list-layout {
+  display: flex;
+  gap: 48px;
+}
+
+.list-left {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+/* ── About 페이지 ── */
+
+.about-body {
+  font-size: 10px;
+  line-height: 2;
+  padding-bottom: 120px;
+  max-width: 520px;
+}
+
+.about-body p + p {
+  margin-top: 28px;
+}
+
+.about-layout {
+  display: flex;
+  gap: 48px;
+}
+
+.about-left {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.interview-section {
+  margin-bottom: 64px;
+}
+
+.interview-section .qa {
+  margin-bottom: 8px;
+}
+
+.manifesto {
+  position: relative;
+  height: 660px;
+  margin-bottom: 60px;
+  overflow: hidden;
+}
+
+.m {
+  position: absolute;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.manifesto-en {
+  position: relative;
+  height: 750px;
+  margin-bottom: 80px;
+  overflow: hidden;
+}
+
+.m-en {
+  position: absolute;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: nowrap;
+  font-family: 'Director', serif;
+}
+
+.code-block {
+  position: absolute;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 9px;
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  background: none;
+  border: none;
+  white-space: pre;
+  margin: 0;
+  padding: 0;
+}
+
+#trail-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.home-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.manifesto-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.interview-sidebar {
+  width: 120px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+
+.interview-sidebar .interview-list {
+  padding-bottom: 0;
+}
+
+.interview-list a:hover {
+  color: #1e5c38;
+  text-decoration: none;
+}
+
+.section-title {
+  font-size: 10px;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+/* ── Comments 페이지 ── */
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.comment-form input,
+.comment-form textarea {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  outline: none;
+  padding: 8px 0;
+  width: 100%;
+  resize: none;
+  line-height: 1.8;
+}
+
+.comment-form input::placeholder,
+.comment-form textarea::placeholder {
+  color: var(--muted);
+}
+
+.comment-form textarea {
+  height: 72px;
+}
+
+.comment-form button {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.comment-form button:hover {
+  color: var(--text);
+}
+
+.comments-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  margin-top: 60px;
+  padding-bottom: 60px;
+}
+
+.comments-empty {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  padding: 20px 20px;
+}
+
+.floating-comment {
+  position: absolute;
+  max-width: 220px;
+}
+
+.fc-name {
+  display: block;
+  font-size: 10px;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+
+.fc-msg {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  line-height: 1.85;
+  word-break: break-word;
+}
+
+/* ── 반응형 ── */
+
+@media (max-width: 480px) {
+  :root {
+    --side-padding: 20px;
+  }
+
+  nav {
+    padding: 28px 0 44px;
+  }
+
+  .interview-list .meta {
+    display: none;
+  }
+}
