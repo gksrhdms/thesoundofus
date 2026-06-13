@@ -135,39 +135,6 @@
       lastX = x; lastY = y;
     });
 
-    // ── 모바일: 터치 시작 ──
-    document.addEventListener('touchstart', function () {
-      lastX = null; lastY = null; lastW = 1.4;
-    }, { passive: true });
-
-    // ── 모바일: 터치 이동 ──
-    document.addEventListener('touchmove', function (e) {
-      var touch = e.touches[0];
-      var x = touch.pageX;
-      var y = touch.pageY;
-      var ns = (lastX === null);
-      var w  = lastW;
-
-      if (!ns) {
-        var dx = x - lastX, dy = y - lastY;
-        if (dx * dx + dy * dy < 1) return;
-        var speed = Math.sqrt(dx * dx + dy * dy);
-        var tw = Math.max(0.6, Math.min(2.2, 2.2 - speed * 0.020));
-        w = lastW = lastW * 0.75 + tw * 0.25;
-      } else {
-        lastW = 1.4; w = 1.4;
-      }
-
-      pts.push({ x: x, y: y, t: Date.now(), w: w, ns: ns });
-      if (pts.length > MAX_PTS) pts.shift();
-      lastX = x; lastY = y;
-    }, { passive: true });
-
-    // ── 모바일: 손 뗌 ──
-    document.addEventListener('touchend', function () {
-      lastX = null; lastY = null;
-    }, { passive: true });
-
     // ── 렌더링 (메인페이지와 동일 로직, 색만 변경) ──
     function drawBatched(from, to, style, width) {
       var cur = null;
