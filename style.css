@@ -28,9 +28,12 @@ body {
   line-height: 17px;
   padding: 0 var(--side-padding);
   -webkit-font-smoothing: antialiased;
-  user-select: none;
-  -webkit-user-select: none;
 }
+::selection {
+  background: rgba(130, 190, 80, 0.35);
+  color: var(--text);
+}
+
 body::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
@@ -139,8 +142,6 @@ main {
 
 .interview-body {
   padding-bottom: 120px;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .qa {
@@ -235,7 +236,6 @@ main {
   position: relative;
   height: 660px;
   margin-bottom: 60px;
-  overflow: hidden;
 }
 
 .m {
@@ -251,7 +251,6 @@ main {
   position: relative;
   height: 750px;
   margin-bottom: 80px;
-  overflow: hidden;
 }
 
 .m-en {

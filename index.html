@@ -113,32 +113,32 @@
     <span class="m-en" style="left:15%;  top:230px; transform:rotate(-0.5deg);">of a time they have lived through</span>
     <span class="m-en" style="left:42%;  top:228px; transform:rotate(2deg);">with their entire being.</span>
 
-    <!-- C 코드 블록 -->
+    <!-- C 코드 블록 — 함수 단위로 분리 -->
     <pre class="code-block" style="left:34%; top:268px; transform:rotate(-1.5deg);">typedef struct {
   char    name[64];
   int     age;
   char   *questions[32];
   char   *answers[32];
   int     count;
-} Interview;
+} Interview;</pre>
 
-void init(Interview *iv, char *name, int age) {
+    <pre class="code-block" style="left:55%; top:298px; transform:rotate(0.9deg);">void init(Interview *iv, char *name, int age) {
   strcpy(iv-&gt;name, name);
   iv-&gt;age   = age;
   iv-&gt;count = 0;
-}
+}</pre>
 
-void ask(Interview *iv, char *q) {
+    <pre class="code-block" style="left:36%; top:388px; transform:rotate(-0.7deg);">void ask(Interview *iv, char *q) {
   iv-&gt;questions[iv-&gt;count] = q;
   iv-&gt;answers[iv-&gt;count]   = NULL;
   iv-&gt;count++;
-}
+}</pre>
 
-void answer(Interview *iv, int i, char *a) {
+    <pre class="code-block" style="left:57%; top:415px; transform:rotate(1.6deg);">void answer(Interview *iv, int i, char *a) {
   iv-&gt;answers[i] = a;
-}
+}</pre>
 
-void print(Interview *iv) {
+    <pre class="code-block" style="left:35%; top:455px; transform:rotate(-0.5deg);">void print(Interview *iv) {
   for (int i = 0; i &lt; iv-&gt;count; i++) {
     printf("Q: %s\n", iv-&gt;questions[i]);
     printf("A: %s\n", iv-&gt;answers[i]);
@@ -375,6 +375,137 @@ void print(Interview *iv) {
   }
 
   render();
+})();
+</script>
+
+<script>
+(function () {
+  var MOUSE_RADIUS   = 155;
+  var MOUSE_FORCE    = 3.8;
+  var SPRING_K       = 0.022;
+  var DAMPING        = 0.87;
+  var COLL_PUSH      = 0.30;
+  var MAX_SPEED      = 24;
+
+  var mousePageX = -9999, mousePageY = -9999;
+  var groups = [];
+
+  document.addEventListener('mousemove', function (e) {
+    mousePageX = e.clientX + window.scrollX;
+    mousePageY = e.clientY + window.scrollY;
+  });
+  document.addEventListener('mouseleave', function () {
+    mousePageX = -9999; mousePageY = -9999;
+  });
+
+  document.addEventListener('touchstart', function (e) {
+    var t = e.touches[0];
+    mousePageX = t.pageX; mousePageY = t.pageY;
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    var t = e.touches[0];
+    mousePageX = t.pageX; mousePageY = t.pageY;
+  }, { passive: true });
+  document.addEventListener('touchend',   function () { mousePageX = -9999; mousePageY = -9999; }, { passive: true });
+  document.addEventListener('touchcancel',function () { mousePageX = -9999; mousePageY = -9999; }, { passive: true });
+
+  function initGroup(section) {
+    var sr  = section.getBoundingClientRect();
+    var sL  = sr.left + window.scrollX;
+    var sT  = sr.top  + window.scrollY;
+    var sW  = section.offsetWidth;
+    var sH  = section.offsetHeight;
+
+    var elems  = Array.from(section.querySelectorAll('.m, .m-en, .code-block'));
+    var bodies = elems.map(function (el) {
+      var er = el.getBoundingClientRect();
+      var ox = er.left + window.scrollX - sL;
+      var oy = er.top  + window.scrollY - sT;
+      el.style.left = ox + 'px';
+      el.style.top  = oy + 'px';
+      return { el: el, ox: ox, oy: oy, x: ox, y: oy,
+               vx: 0, vy: 0, w: er.width, h: er.height };
+    });
+    return { bodies: bodies, sL: sL, sT: sT, sW: sW, sH: sH };
+  }
+
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  function step(g) {
+    var bodies = g.bodies;
+    var n   = bodies.length;
+    var mx  = mousePageX - g.sL;
+    var my  = mousePageY - g.sT;
+    var i, j, b, a;
+
+    /* ── 1. 마우스 반발력 + 스프링 ── */
+    for (i = 0; i < n; i++) {
+      b = bodies[i];
+      var cx = b.x + b.w * 0.5;
+      var cy = b.y + b.h * 0.5;
+
+      var fx = (b.ox - b.x) * SPRING_K;
+      var fy = (b.oy - b.y) * SPRING_K;
+
+      var dx = cx - mx, dy = cy - my;
+      var d2 = dx * dx + dy * dy;
+      if (d2 < MOUSE_RADIUS * MOUSE_RADIUS && d2 > 0.01) {
+        var d   = Math.sqrt(d2);
+        var str = (1 - d / MOUSE_RADIUS) * MOUSE_FORCE / d;
+        fx += dx * str;
+        fy += dy * str;
+      }
+
+      b.vx = clamp((b.vx + fx) * DAMPING, -MAX_SPEED, MAX_SPEED);
+      b.vy = clamp((b.vy + fy) * DAMPING, -MAX_SPEED, MAX_SPEED);
+    }
+
+    /* ── 2. 요소간 충돌 (AABB) ── */
+    for (i = 0; i < n; i++) {
+      a = bodies[i];
+      for (j = i + 1; j < n; j++) {
+        b = bodies[j];
+        var ovR = (a.x + a.w) - b.x;
+        var ovL = (b.x + b.w) - a.x;
+        var ovD = (a.y + a.h) - b.y;
+        var ovU = (b.y + b.h) - a.y;
+        if (ovR > 0 && ovL > 0 && ovD > 0 && ovU > 0) {
+          var minX = ovR < ovL ? ovR : ovL;
+          var minY = ovD < ovU ? ovD : ovU;
+          if (minX < minY) {
+            var px = minX * COLL_PUSH;
+            if (ovR < ovL) { a.vx -= px; b.vx += px; }
+            else            { b.vx -= px; a.vx += px; }
+          } else {
+            var py = minY * COLL_PUSH;
+            if (ovD < ovU) { a.vy -= py; b.vy += py; }
+            else            { b.vy -= py; a.vy += py; }
+          }
+        }
+      }
+    }
+
+    /* ── 3. 위치 갱신 ── */
+    for (i = 0; i < n; i++) {
+      b = bodies[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      b.el.style.left = b.x.toFixed(1) + 'px';
+      b.el.style.top  = b.y.toFixed(1) + 'px';
+    }
+  }
+
+  function loop() {
+    for (var i = 0; i < groups.length; i++) step(groups[i]);
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('load', function () {
+    document.querySelectorAll('.manifesto, .manifesto-en').forEach(function (s) {
+      groups.push(initGroup(s));
+    });
+    loop();
+  });
 })();
 </script>
 
